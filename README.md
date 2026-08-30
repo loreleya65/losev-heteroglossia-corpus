@@ -1,3 +1,5 @@
+code
+Markdown
 # The Poetics of Foreign-Language Inclusion in Lev Loseff’s Lyric Verse: A Corpus Study of Heteroglossia in the Early Émigré Text
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -26,7 +28,42 @@ The study presents an exhaustive survey of foreign-language inclusions across Lo
 
 ## 🛠 Methodology & Two-Step Pipeline
 
-Due to morphological analyzer architecture (`pymorphy3` uses OpenCorpora with Cyrillic-only lexicons and assigns the `LATN` tag without dictionary lookup), the extraction is separated into two independent procedures:1. **Procedure 1 (`losev_extract.py`):** High-precision regex extraction for Latin/Greek/Hebrew scripts, handling inter-token punctuation gaps, multi-line spanning, OCR artifact filtering, and script-diacritic mapping.
+Due to morphological analyzer architecture (`pymorphy3` uses OpenCorpora with Cyrillic-only lexicons and assigns the `LATN` tag without dictionary lookup), the extraction is separated into two independent procedures:
+code
+Code
+┌────────────────────────────────────────┐
+              │            Raw Verse Corpus            │
+              └───────────────────┬────────────────────┘
+                                  │
+       ┌──────────────────────────┴──────────────────────────┐
+       ▼                                                     ▼
+┌─────────────────────────────┐ ┌─────────────────────────────┐
+│ Procedure 1 │ │ Procedure 2 │
+│ Non-Cyrillic Script │ │ Cyrillic-Script Inclusions │
+│ (Latin, Greek, Hebrew, │ │ (Out-of-Vocabulary / │
+│ Diacritics & Noise) │ │ pymorphy3) │
+│ losev_extract.py │ │ losev_oov.py │
+└──────────────┬──────────────┘ └──────────────┬──────────────┘
+│ │
+▼ ▼
+45 Token Mappings 577 OOV Candidates
+│ │
+└──────────────────────┬──────────────────────────────┘
+▼
+┌───────────────────────────────┐
+│ Manual Verification & │
+│ Collation with 2012 Ed. │
+└───────────────┬───────────────┘
+▼
+┌───────────────────────────────┐
+│ 42 Inclusion Units (Final) │
+│ + 2 Graphic Interferences │
+│ + 3 Hybrid Nonce Formations │
+│ + 15 Onyms Excluded (Rule 3) │
+└───────────────────────────────┘
+code
+Code
+1. **Procedure 1 (`losev_extract.py`):** High-precision regex extraction for Latin/Greek/Hebrew scripts, handling inter-token punctuation gaps, multi-line spanning, OCR artifact filtering, and script-diacritic mapping.
 2. **Procedure 2 (`losev_oov.py`):** Cyrillic Out-of-Vocabulary (OOV) discovery using `pymorphy3` (`is_known == False` across all parses), heuristic bucketing, and backmatter/frontmatter filtering.
 3. **Phonotactic Sieve:** Additional dictionary-independent completeness check targeting non-native consonant clusters and vowel hiatuses.
 
@@ -46,15 +83,36 @@ Due to morphological analyzer architecture (`pymorphy3` uses OpenCorpora with Cy
 │   ├── tainii_sovetnik.txt
 │   └── stikhi_2012.txt
 └── README.md                     # Documentation
+🚀 Installation & Reproduction
+1. Clone the repository
+code
+Bash
 git clone https://github.com/<your-username>/losev-heteroglossia-corpus.git
+cd losev-heteroglossia-corpus
+2. Install dependencies
+code
+Bash
 python3 -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+3. Run the extraction scripts
+Place the plaintext corpus files into ./corpus/ (or ./uploads/) and execute:
+code
+Bash
 # Procedure 1: Extract non-Cyrillic tokens
 python3 losev_extract.py ./corpus ./losev_foreign_inclusions.xlsx
 
 # Procedure 2: Extract Cyrillic OOV candidates
 python3 losev_oov.py ./corpus ./losev_oov_candidates.xlsx
+📊 Dataset Structure (losev_foreign_inclusions.xlsx)
+The dataset maintains total research transparency by exposing both machine outputs and manual philological decisions:
+Sheet Вкрапления (Inclusions): Primary extraction table containing context strings, script tags, diacritics list, compatible orthography hints, and verification columns (Итоговое чтение, Единица анализа, Статус, Основание, Язык-источник).
+Sheet Сводка (Summary): Aggregate metrics per book and corpus volume.
+Sheet Отсев (Rejected): Full audit log of rejected OCR noise, stress marks, homoglyphs, and pagination artifacts.
+📝 Citation
+If you use this code, methodology, or dataset in your research, please cite the original article:
+code
+Bibtex
 @article{loseff_heteroglossia_2026,
   author    = {Author, Name},
   title     = {The Poetics of Foreign-Language Inclusion in Lev Loseff’s Lyric Verse: A Corpus Study of Heteroglossia in the Early {\'{E}}migr{\'{e}} Text},
@@ -65,6 +123,9 @@ python3 losev_oov.py ./corpus ./losev_oov_candidates.xlsx
   pages     = {000--000},
   doi       = {10.00000/0000}
 }
+Replication Package Citation:
+code
+Bibtex
 @dataset{loseff_corpus_data_2026,
   author    = {Author, Name},
   title     = {Replication Package: Poetics of Foreign-Language Inclusion in Lev Loseff’s Lyric Verse (Extraction Pipeline and Master Dataset)},
@@ -72,4 +133,7 @@ python3 losev_oov.py ./corpus ./losev_oov_candidates.xlsx
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.XXXXXXX}
 }
-cd losev-heteroglossia-corpus
+📄 License
+The software code is licensed under the MIT License. The textual metadata and datasets are available under CC BY 4.0.
+code
+Code
